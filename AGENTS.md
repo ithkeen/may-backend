@@ -15,10 +15,11 @@ The `doc/domain/` directory describes the business domains and domain concepts i
 - Use `.venv` / `uv` for the project environment. Python scripts, tests, and project commands must run through `uv run ...`; do not use global `python` / `python3` directly.
 - Business code must use `may_backend.logger` for logging. Before adding or changing log calls, read `doc/domain/logger/usage.md`.
 
-## Test Commands
+## Build and Test Commands
 
 - Run all tests: `uv run pytest`
 - Run logger tests: `uv run pytest tests/logger`
+- Run app locally: `uv run uvicorn may_backend.app:create_app --factory --host 0.0.0.0 --port 8000`
 
 ## Code Style Guidelines
 
