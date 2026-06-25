@@ -30,3 +30,6 @@ env/
 build/
 dist/
 *.egg-info/
+
+# Runtime logs
+logs/

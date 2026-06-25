@@ -10,8 +10,27 @@ The intended goal is to help sellers and operators produce consistent, high-qual
 
 The `doc/domain/` directory describes the business domains and domain concepts intended to be implemented in this project. Treat the materials in that directory as planning and domain reference for future implementation work.
 
-## Command Running Rules
+## Project Rules
 
-- Use a local virtual environment for project work, preferably the `.venv` environment managed by `uv`.
-- Run Python commands through `uv run`, for example `uv run python script.py` or `uv run pytest`.
-- Do not run project Python scripts directly with global Python commands such as `python3 script.py`.
+- Use `.venv` / `uv` for the project environment. Python scripts, tests, and project commands must run through `uv run ...`; do not use global `python` / `python3` directly.
+- Business code must use `may_backend.logger` for logging. Before adding or changing log calls, read `doc/domain/logger/usage.md`.
+
+## Test Commands
+
+- Run all tests: `uv run pytest`
+- Run logger tests: `uv run pytest tests/logger`
+
+## Code Style Guidelines
+
+### Type Annotations
+
+- New functions must include type annotations.
+- Public functions and application use cases must annotate parameters and return values. Avoid `Any` where a concrete type is reasonable.
+- Do not use bare `dict` / `list` for complex business objects; prefer dataclasses or Pydantic models.
+
+### Comment Style
+
+- Do not explain self-evident code.
+- Add short comments for complex business rules.
+- Public APIs, domain models, and important use cases may use docstrings.
+- Explain why, not what the code already says.
