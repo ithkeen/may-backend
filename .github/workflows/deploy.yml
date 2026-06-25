@@ -1,0 +1,91 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare image variables
+        id: image
+        run: |
+          set -euo pipefail
+          image_name="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "name=${image_name}" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:${{ steps.image.outputs.tag }}
+            ${{ steps.image.outputs.name }}:latest
+
+      - name: Install SSH password client
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Upload compose file
+        env:
+          SSHPASS: ${{ secrets.DEPLOY_PASSWORD }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          sshpass -e ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH'"
+          sshpass -e scp -P "$DEPLOY_PORT" docker-compose.prod.yml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/docker-compose.prod.yml"
+
+      - name: Deploy on server
+        env:
+          SSHPASS: ${{ secrets.DEPLOY_PASSWORD }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          sshpass -e ssh -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' <<EOF_REMOTE
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          touch .env
+          mkdir -p logs
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+          IMAGE_NAME="$IMAGE_NAME" IMAGE_TAG="$IMAGE_TAG" docker compose -f docker-compose.prod.yml pull
+          IMAGE_NAME="$IMAGE_NAME" IMAGE_TAG="$IMAGE_TAG" docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          IMAGE_NAME="$IMAGE_NAME" IMAGE_TAG="$IMAGE_TAG" docker compose -f docker-compose.prod.yml logs --tail=100 may-backend
+          docker image prune -f
+          EOF_REMOTE

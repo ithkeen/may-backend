@@ -1,0 +1,16 @@
+services:
+  may-backend:
+    image: ${IMAGE_NAME:?IMAGE_NAME is required}:${IMAGE_TAG:?IMAGE_TAG is required}
+    container_name: may-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      LOG_DIR: /app/logs
+      LOG_FILE: ${LOG_FILE:-app.jsonl}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-7}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - ./logs:/app/logs
