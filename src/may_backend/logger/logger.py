@@ -5,7 +5,7 @@ from contextlib import AbstractContextManager
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from may_backend.logger.config import load_config
+from may_backend.config import log_config
 from may_backend.logger.context import get_request_id, get_trace_id, log_context
 from may_backend.logger.formatter import format_json_line
 from may_backend.logger.writer import append_line
@@ -59,7 +59,7 @@ class Logger:
 
     def _log(self, level: str, fields: Mapping[str, object]) -> None:
         try:
-            config = load_config()
+            config = log_config
             if LEVELS[level] < LEVELS.get(config.level, LEVELS["INFO"]):
                 return
 
