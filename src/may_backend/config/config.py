@@ -56,6 +56,12 @@ class _Settings(BaseSettings):
         le=3600,
         validation_alias="UCLOUD_US3_PUT_URL_EXPIRES_SECONDS",
     )
+    ucloud_us3_get_url_expires_seconds: int = Field(
+        default=900,
+        ge=60,
+        le=3600,
+        validation_alias="UCLOUD_US3_GET_URL_EXPIRES_SECONDS",
+    )
 
     @field_validator("log_level", mode="before")
     @classmethod
@@ -85,6 +91,7 @@ class _UCloudUS3Config:
     private_key: str
     use_https: bool
     put_url_expires_seconds: int
+    get_url_expires_seconds: int
 
 
 _settings = _Settings()
@@ -102,4 +109,5 @@ ucloud_us3_config = _UCloudUS3Config(
     private_key=_settings.ucloud_us3_private_key,
     use_https=_settings.ucloud_us3_use_https,
     put_url_expires_seconds=_settings.ucloud_us3_put_url_expires_seconds,
+    get_url_expires_seconds=_settings.ucloud_us3_get_url_expires_seconds,
 )
