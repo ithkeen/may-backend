@@ -1,1 +1,3 @@
 # trace领域
+
+对外接口调用时要有traceId， 统一由middleware生成traceId，然后返回结果时把reaceId也返回

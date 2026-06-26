@@ -13,7 +13,7 @@ The `doc/domain/` directory describes the business domains and domain concepts i
 ## Project Rules
 
 - Use `.venv` / `uv` for the project environment. Python scripts, tests, and project commands must run through `uv run ...`; do not use global `python` / `python3` directly.
-- Business code must use `may_backend.logger` for logging. Before adding or changing log calls, read `doc/domain/logger/usage.md`.
+- Business code must actively add logs at operationally meaningful moments such as system boundaries, business state changes, external dependency outcomes, handled errors, and abnormal signals; use `may_backend.logger` for logging, read `doc/domain/logger/usage.md` before adding or changing log calls, and strictly follow `doc/domain/logger/rules.md`.
 
 ## Build and Test Commands
 
