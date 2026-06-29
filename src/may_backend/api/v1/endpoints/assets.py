@@ -8,7 +8,7 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, field_validator
 
-from may_backend.api.deps import ApplicationServicesDep
+from may_backend.api.dependencies import CreatePresignedPutUrlDep
 from may_backend.logger import logger
 
 
@@ -51,10 +51,10 @@ class CreateImageGenerationResponse(BaseModel):
 @router.post("/presigned-put-url", response_model=CreatePresignedPutUrlResponse)
 def create_presigned_put_url(
     request: CreatePresignedPutUrlRequest,
-    services: ApplicationServicesDep,
+    use_case: CreatePresignedPutUrlDep,
 ) -> CreatePresignedPutUrlResponse:
     try:
-        presigned_url = services.create_presigned_put_url.execute(
+        presigned_url = use_case.execute(
             key=request.key,
             content_type=request.content_type,
             expires_in_seconds=request.expires_in_seconds,
