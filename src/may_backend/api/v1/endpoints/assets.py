@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from may_backend.api.deps import ApplicationServicesDep
 from may_backend.logger import logger
@@ -28,6 +28,24 @@ class CreatePresignedPutUrlResponse(BaseModel):
     key: str
     expires_at: datetime
     expires_in_seconds: int
+
+
+class CreateImageGenerationRequest(BaseModel):
+    image_key: str
+    prompt: str = Field(min_length=1, max_length=4000)
+
+    @field_validator("prompt", mode="before")
+    @classmethod
+    def _normalize_prompt(cls, value: object) -> object:
+        if isinstance(value, str):
+            return value.strip()
+        return value
+
+
+class CreateImageGenerationResponse(BaseModel):
+    status: Literal["accepted"]
+    image_key: str
+    prompt: str
 
 
 @router.post("/presigned-put-url", response_model=CreatePresignedPutUrlResponse)
@@ -75,4 +93,24 @@ def create_presigned_put_url(
         key=presigned_url.key,
         expires_at=presigned_url.expires_at,
         expires_in_seconds=presigned_url.expires_in_seconds,
+    )
+
+
+@router.post(
+    "/image-generation",
+    response_model=CreateImageGenerationResponse,
+)
+def create_image_generation(
+    request: CreateImageGenerationRequest,
+) -> CreateImageGenerationResponse:
+    logger.info(
+        event="asset.image_generation.received",
+        image_key=request.image_key,
+        prompt_length=len(request.prompt),
+    )
+
+    return CreateImageGenerationResponse(
+        status="accepted",
+        image_key=request.image_key,
+        prompt=request.prompt,
     )

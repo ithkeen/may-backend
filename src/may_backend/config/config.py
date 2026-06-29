@@ -62,6 +62,10 @@ class _Settings(BaseSettings):
         le=3600,
         validation_alias="UCLOUD_US3_GET_URL_EXPIRES_SECONDS",
     )
+    database_url: str = Field(
+        default="",
+        validation_alias="DATABASE_URL",
+    )
 
     @field_validator("log_level", mode="before")
     @classmethod
@@ -94,6 +98,11 @@ class _UCloudUS3Config:
     get_url_expires_seconds: int
 
 
+@dataclass(frozen=True)
+class _SupabaseConfig:
+    database_url: str
+
+
 _settings = _Settings()
 
 log_config = _LogConfig(
@@ -111,3 +120,4 @@ ucloud_us3_config = _UCloudUS3Config(
     put_url_expires_seconds=_settings.ucloud_us3_put_url_expires_seconds,
     get_url_expires_seconds=_settings.ucloud_us3_get_url_expires_seconds,
 )
+supabase_config = _SupabaseConfig(database_url=_settings.database_url)

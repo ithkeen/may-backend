@@ -23,6 +23,11 @@ The `doc/domain/` directory describes the business domains and domain concepts i
 
 ## Code Style Guidelines
 
+### Architecture Style
+
+- `doc/architecture/ddd-practice.md` is the project architecture style guide.
+- Before designing or writing code, read `doc/architecture/ddd-practice.md` and follow its DDD layering, directory, aggregate, repository, CRUD, and logging rules.
+
 ### Type Annotations
 
 - New functions must include type annotations.

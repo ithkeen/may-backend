@@ -260,7 +260,6 @@ class UCloudUS3ObjectStorage:
             )
             raise ObjectStorageError(
                 "UCloud US3 request failed",
-                err_msg=str(exc),
             ) from exc
 
         if response.status_code not in expected_status_codes:
@@ -315,10 +314,6 @@ class UCloudUS3ObjectStorage:
         )
         raise error_class(
             message,
-            status_code=response.status_code,
-            ret_code=ret_code,
-            err_msg=err_msg,
-            session_id=session_id,
         )
 
     def _authorization_header(

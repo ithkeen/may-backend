@@ -55,20 +55,7 @@ class StoredObject:
 
 
 class ObjectStorageError(RuntimeError):
-    def __init__(
-        self,
-        message: str,
-        *,
-        status_code: int | None = None,
-        ret_code: int | None = None,
-        err_msg: str | None = None,
-        session_id: str | None = None,
-    ) -> None:
-        super().__init__(message)
-        self.status_code = status_code
-        self.ret_code = ret_code
-        self.err_msg = err_msg
-        self.session_id = session_id
+    """Raised when object storage cannot complete the requested operation."""
 
 
 class ObjectStorageNotFoundError(ObjectStorageError):
